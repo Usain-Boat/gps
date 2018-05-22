@@ -3,27 +3,51 @@
 
 DigitalOut led(LED1);
 DigitalIn button(USER_BUTTON);
-//Serial UART(USBTX, USBRX, 57600);
 //Serial GPS(D1, D0);
+Serial UART(USBTX, USBRX, 57600);
 
 int main() {
     AdafruitUltimateGPS karel;
-    gprmc_data test;
-//    karel.writeregister((uint8_t *) "001", (uint8_t *) "604", 3, (uint8_t *)"3", 1); // checksum would be 32
-//    karel.writeregister((uint8_t *) "001", (uint8_t *) "001", 3); //checksum would be 2E
-//    karel.writeregister((uint8_t *) "000"); //checksum would be 32
+    AdafruitUltimateGPS::gprmc_data test;
 
-//    UART.printf("Started\n\r");
+//    switch(karel.SetUpdaterate("200")){
+//        case GPS_ACK_INVALID_COMMAND:
+//            UART.printf("SETUPDATERATE: INVALID COMMAND\r\n");
+//            break;
+//        case GPS_ACK_UNSUPPORTED_COMMAND:
+//            UART.printf("SETUPDATERATE: UNSUPPORTED COMMAND\r\n");
+//            break;
+//        case GPS_ACK_ACTION_FAILED:
+//            UART.printf("SETUPDATERATE: ACTION FAILED\r\n");
+//            break;
+//        case GPS_ACK_SUCCES:
+//            UART.printf("SETUPDATERATE: SUCCES\r\n");
+//            break;
+//        case '4':
+//            UART.printf("SETUPDATERATE: CODE ERROR\r\n");
+//            break;
+//        default:
+//            UART.printf("SYSTEM FAULT!\r\n");
+//            break;
+//    }
+
     while (true) {
 
 
         karel.parsedata();
-        if(karel.messagereceivedstatus()){
+
+        if(karel.ReceievedNewGPRMC()){
             led = led ^ 1;
             karel.GetLastGprmcData(&test);
 //            UART.printf("Time stamp is: %s\r\n", &test.time_stamp);
-//            UART.printf("validity gps is: %s\r\n", &test.validity);
-            karel.messagereceivedstatus(false);
+            if ( *test.validity == 'A'){
+                //gps data = LLDD.DD lat = LL + (DD.DD / 60)
+                UART.printf("dingentje are: %s, %s \r\n", test.latitude, test.longitude);
+                UART.printf("Coördinates are: %f, %f \r\n", test.latitude_fixed, test.longitude_fixed);
+            } else{
+                UART.printf("searching for GPS %s\r\n", &test.validity);
+            }
+            karel.ReceievedNewGPRMC(false);
         }
 
     }
