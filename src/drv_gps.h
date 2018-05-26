@@ -9,6 +9,8 @@
 #include "databuffer.h"
 #include <string.h>
 
+
+static Serial UART(USBTX, USBRX, 115200);
 const char GPS_ACK_INVALID_COMMAND = '0';
 const char GPS_ACK_UNSUPPORTED_COMMAND = '1';
 const char GPS_ACK_ACTION_FAILED = '2';
@@ -18,7 +20,7 @@ class AdafruitUltimateGPS
 {
 public:
 
-    struct gprmc_data
+    typedef struct
     {
         float longitude_fixed;
         float latitude_fixed;
@@ -36,7 +38,7 @@ public:
         uint8_t mode_indicator[10];
 
 
-    };
+    }gprmc_data_t;
 
     AdafruitUltimateGPS();
 
@@ -51,10 +53,13 @@ public:
 
     void parsedata();
 
-    void GetLastGprmcData(gprmc_data *gpsdata);
+    void GetLastGprmcData(gprmc_data_t *gpsdata);
 
-    char SetBaudrate(char *baudrate);
-    char SetUpdaterate(char *updaterate);
+    int setbaudrateto115200();
+
+    int setupdaterate(char *updaterate);
+
+    int coldstart();
 
     bool ReceievedNewGPRMC();
 
@@ -73,7 +78,7 @@ private:
     Databuffer _sendstring;
     Databuffer _receivestring;
     ultimate_gps_message _last_received_message;
-    gprmc_data _last_received_gprmc;
+    gprmc_data_t _last_received_gprmc;
 
     void _RXInterrupt();
 

@@ -1055,7 +1055,7 @@ ADD_EXECUTABLE(blinky
         mbed-os/targets/TARGET_STM/us_ticker_16b.c
         mbed-os/targets/TARGET_STM/us_ticker_32b.c
         mbed_config.h
-        src/drv_gps.cpp src/drv_gps.h src/databuffer.cpp src/databuffer.h src/drv_pwm.cpp src/drv_pwm.h)
+        src/drv_gps.cpp src/drv_gps.h src/databuffer.cpp src/databuffer.h src/drv_pwm.cpp src/drv_pwm.h src/usain_gps.cpp src/usain_gps.h)
 SET_TARGET_PROPERTIES(blinky PROPERTIES ENABLE_EXPORTS 1)
 # add syslibs dependencies to create the correct linker order
 TARGET_LINK_LIBRARIES(blinky -lstdc++ -lsupc++ -lm -lc -lgcc -lnosys)
