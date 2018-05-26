@@ -22,6 +22,8 @@ public:
 
     int get_gps_message(AdafruitUltimateGPS::gprmc_data_t &dest);
 
+    double get_distance_centimeter(AdafruitUltimateGPS::gprmc_data_t &gps_point1, AdafruitUltimateGPS::gprmc_data_t &gps_point2);
+
     bool data_received();
 
 private:

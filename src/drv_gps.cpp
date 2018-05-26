@@ -19,6 +19,7 @@ const uint8_t GPS_CMD_COLD_START[] = "103";
 const uint8_t GPS_CMD_FULL_COLD_START[] = "104";
 const uint8_t GPS_SET_UPDATERATE[] = "220";
 const uint8_t GPS_SET_BAUDRATE[] = "251";
+const uint8_t GPS_SET_NMEA_OUTPUT[] = "314";
 
 uint8_t hex2asc0(uint8_t c);
 
@@ -140,7 +141,6 @@ void AdafruitUltimateGPS::parsedata() {
         //CRC check
         if (_CRCCheck((char *) _receivestring.get_data()) == false)
         {
-            UART.printf("CRC FAILED\r\n");
             _receivestring.clear();
             _flag_received_valid_string = false;
             return;
@@ -242,7 +242,6 @@ void AdafruitUltimateGPS::_RXInterrupt() {
     static bool _flag_etx1_received = false; //local flag if begin message char is  received
 
     uint8_t getchar = _UART.getc();
-    UART.putc(getchar);
     //eror check
     if (_flag_received_valid_string)
     {
@@ -322,20 +321,27 @@ void AdafruitUltimateGPS::GetLastGprmcData(gprmc_data_t *gpsdata) {
 int AdafruitUltimateGPS::setbaudrateto115200() {
 
     writeregister((uint8_t *) GPS_SET_BAUDRATE, (uint8_t *) "115200", 6);
-    _UART.baud(115200);
+
     Timer lookforflags;
     lookforflags.reset();
     lookforflags.start();
-    while (lookforflags.read() < 1)
+    while (lookforflags.read_ms() < 10L);
+    _UART.baud(115200);
+    lookforflags.reset();
+    lookforflags.start();
+    _flag_gprmc_message_received = false;
+
+
+    while (lookforflags.read_ms() < 1500L)
     {
         parsedata();
-        if (_flag_pktm_message_received && !memcmp(_last_received_message.messagetype + 4, GPS_ACK, 3) &&
-            !memcmp(&_last_received_message.parameters[0][0], GPS_SET_BAUDRATE, 3))
+        if (_flag_gprmc_message_received)
         {
-            _flag_pktm_message_received = false;
-            return -3 + _last_received_message.parameters[1][0];
+            _flag_gprmc_message_received = false;
+            return 0;
         }
     }
+    _UART.baud(9600);
     return -4;
 }
 
@@ -353,7 +359,7 @@ int AdafruitUltimateGPS::setupdaterate(char *updaterate) {
             !memcmp(&_last_received_message.parameters[0][0], GPS_SET_UPDATERATE, 3))
         {
             _flag_pktm_message_received = false;
-            return 3 - _last_received_message.parameters[1][0];
+            return 0x33 - _last_received_message.parameters[1][0];
         }
     }
     return -4;
@@ -367,7 +373,7 @@ int AdafruitUltimateGPS::coldstart() {
 
     lookforflags.reset();
     lookforflags.start();
-    while (lookforflags.read_ms() < 10);
+    while (lookforflags.read_ms() < 60);
     _UART.baud(9600);
 
     lookforflags.reset();
@@ -380,33 +386,48 @@ int AdafruitUltimateGPS::coldstart() {
             !memcmp(&_last_received_message.parameters[0][0], "103", 3))
         {
             _flag_pktm_message_received = false;
-            return -3 + _last_received_message.parameters[1][0];
+            return 0;
         }
     }
-
-
     lookforflags.reset();
     lookforflags.start();
     _UART.baud(9600);
 
 
     writeregister((uint8_t *) GPS_CMD_FULL_COLD_START);
-    UART.printf("try again on 9600 baudrate\r\n");
+    lookforflags.reset();
+    lookforflags.start();
+    while (lookforflags.read_ms() < 10L);
+
     while (lookforflags.read() < 2)
     {
         parsedata();
-        if (_flag_pktm_message_received){
-            UART.printf("BERICHT: %s%s\r\n",_last_received_message.messagetype, &_last_received_message.parameters[0][0]);
-        }
         if (_flag_pktm_message_received && !memcmp(_last_received_message.messagetype, "PGACK", 5) &&
             !memcmp(&_last_received_message.parameters[0][0], "103", 3))
         {
             _flag_pktm_message_received = false;
-            UART.printf("COLD receive \r\n");
-            return -3 + _last_received_message.parameters[1][0];
+            return 0;
         }
     }
-    UART.printf("COLD fack \r\n");
+    return -4;
+}
+
+int AdafruitUltimateGPS::onlyreceivegprmcdata() {
+    writeregister((uint8_t *) GPS_SET_NMEA_OUTPUT, (uint8_t *)"0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" , 37 );
+
+    Timer lookforflags;
+    lookforflags.reset();
+    lookforflags.start();
+    while (lookforflags.read() < 2)
+    {
+        parsedata();
+        if (_flag_pktm_message_received && !memcmp(_last_received_message.messagetype + 4, GPS_ACK, 3) &&
+            !memcmp(&_last_received_message.parameters[0][0], GPS_SET_NMEA_OUTPUT, 3))
+        {
+            _flag_pktm_message_received = false;
+            return 0x33 - _last_received_message.parameters[1][0];
+        }
+    }
     return -4;
 }
 

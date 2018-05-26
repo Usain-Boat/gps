@@ -22,8 +22,8 @@ public:
 
     typedef struct
     {
-        float longitude_fixed;
-        float latitude_fixed;
+        double longitude_fixed;
+        double latitude_fixed;
         uint8_t time_stamp[10];
         uint8_t validity[10];
         uint8_t latitude[10];
@@ -60,6 +60,8 @@ public:
     int setupdaterate(char *updaterate);
 
     int coldstart();
+
+    int onlyreceivegprmcdata();
 
     bool ReceievedNewGPRMC();
 

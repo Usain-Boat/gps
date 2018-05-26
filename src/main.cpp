@@ -9,10 +9,19 @@ DigitalIn button(USER_BUTTON);
 
 int main() {
 //    AdafruitUltimateGPS karel;
-    AdafruitUltimateGPS::gprmc_data_t test;
+    AdafruitUltimateGPS::gprmc_data_t test, piet1, piet2;
     UsainGPS gpsje;
 
-    UART.printf("STARTUP\r\n");
+    piet1.longitude_fixed = 51.880585;
+    piet1.latitude_fixed = 5.706903;
+    piet2.longitude_fixed = 51.880589;
+    piet2.latitude_fixed = 5.706903;
+
+
+    double distance = gpsje.get_distance_centimeter(piet1, piet2);
+
+
+    UART.printf("STARTUP %lf\r\n", distance);
     char error = gpsje.init();
 
     if (error & 0x01)
@@ -21,11 +30,11 @@ int main() {
     }
     if (error & 0x02)
     {
-        UART.printf("UART baudrate FAILED\r\n");
+        UART.printf("UART REFRESHRATE FAILED\r\n");
     }
     if (error & 0x04)
     {
-        UART.printf("UART REFRESHRATE FAILED\r\n");
+        UART.printf("UART gprmc FAILED\r\n");
     }
 
 //    switch(karel.setupdaterate("200")){
@@ -60,7 +69,6 @@ int main() {
             if (*test.validity == 'A')
             {
                 //gps data = LLDD.DD lat = LL + (DD.DD / 60)
-                UART.printf("dingentje are: %s, %s \r\n", test.latitude, test.longitude);
                 UART.printf("Coördinates are: %f, %f \r\n", test.latitude_fixed, test.longitude_fixed);
             }
             else
