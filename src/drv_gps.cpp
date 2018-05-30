@@ -242,6 +242,7 @@ void AdafruitUltimateGPS::_RXInterrupt() {
     static bool _flag_etx1_received = false; //local flag if begin message char is  received
 
     uint8_t getchar = _UART.getc();
+//    UART.putc(getchar);
     //eror check
     if (_flag_received_valid_string)
     {

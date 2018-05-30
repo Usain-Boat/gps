@@ -32,7 +32,7 @@ uint8_t UsainGPS::init() {
     delaytje.reset();
     delaytje.start();
     while (delaytje.read() < 1);
-    status = _gps.setupdaterate((char *) "100");
+    while(_gps.setupdaterate((char *) "100"));
     if (status)
     {
         return_value |= 0x02;
@@ -73,28 +73,37 @@ int UsainGPS::get_gps_message(AdafruitUltimateGPS::gprmc_data_t &dest) {
         return -1;
     }
     _gps.ReceievedNewGPRMC(false);
-    if (*dest.validity == 'V')
-    {
-        return -2; // data not valid
-    }
+//    if (*dest.validity == 'V')
+//    {
+//        return -2; // data not valid
+//    }
     return 0;
 }
 
 //haversine method
-double UsainGPS::get_distance_centimeter(AdafruitUltimateGPS::gprmc_data_t &gps_point1,
-                                        AdafruitUltimateGPS::gprmc_data_t &gps_point2) {
+void UsainGPS::get_distance_centimeter(AdafruitUltimateGPS::gprmc_data_t &home_position,
+                                        AdafruitUltimateGPS::gprmc_data_t &destination_position, double *distance_cm, double *bearing_degrees) {
     const double R = 6371e3;
-    double latitude1 = deg2rad(gps_point1.latitude_fixed);
-    double latitude2 = deg2rad(gps_point2.latitude_fixed);
-    double latitude12 = deg2rad(gps_point2.latitude_fixed - gps_point1.latitude_fixed);//(lat2-lat1).toRadians();
-    double longitude12 = deg2rad(gps_point2.longitude_fixed - gps_point1.longitude_fixed);//(lon2-lon1).toRadians();
+    double home_latitude = deg2rad(home_position.latitude_fixed);
+    double dest_latitude = deg2rad(destination_position.latitude_fixed);
+    double differenceLat = deg2rad(destination_position.latitude_fixed - home_position.latitude_fixed);//(lat2-lat1).toRadians();
+    double differenceLon = deg2rad(destination_position.longitude_fixed - home_position.longitude_fixed);//(lon2-lon1).toRadians();
 
-    double a = sin(latitude12/2) * sin(latitude12/2) +
-            cos(latitude1) * cos(latitude2) *
-            sin(longitude12/2) * sin(longitude12/2);
+    double a = sin(differenceLat/2) * sin(differenceLat/2) +
+            cos(home_latitude) * cos(dest_latitude) *
+            sin(differenceLon/2) * sin(differenceLon/2);
     double c = 2 * atan2(sqrt(a), sqrt(1-a));
 
-    return R * c;
+
+
+
+
+    double rad_bearing = atan2(sin(differenceLon) * cos(dest_latitude),
+                              cos(home_latitude) * sin(dest_latitude)
+                              - sin(home_latitude) * cos(dest_latitude) * cos(differenceLon));
+
+    *distance_cm = R * c;
+    *bearing_degrees = (rad2deg(rad_bearing) - 90) < 0 ? (rad2deg(rad_bearing) - 90) + 360: (rad2deg(rad_bearing) - 90);
 }
 
 

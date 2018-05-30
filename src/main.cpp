@@ -1,6 +1,7 @@
 #include "mbed.h"
 #include "drv_gps.h"
 #include "usain_gps.h"
+#include <math.h>
 
 DigitalOut led(LED1);
 DigitalIn button(USER_BUTTON);
@@ -12,16 +13,19 @@ int main() {
     AdafruitUltimateGPS::gprmc_data_t test, piet1, piet2;
     UsainGPS gpsje;
 
-    piet1.longitude_fixed = 51.880585;
-    piet1.latitude_fixed = 5.706903;
-    piet2.longitude_fixed = 51.880589;
-    piet2.latitude_fixed = 5.706903;
+    piet1.longitude_fixed = 51.8817876;
+    piet1.latitude_fixed = 5.706754899999964;
+    piet2.longitude_fixed = 51.8819876;
+    piet2.latitude_fixed =   5.706754899999964;
 
 
-    double distance = gpsje.get_distance_centimeter(piet1, piet2);
+    double distance;
+    double bearing;
+    gpsje.get_distance_centimeter(piet1, piet2, &distance, &bearing);
 
+    UART.printf("STARTUP\r\n");
 
-    UART.printf("STARTUP %lf\r\n", distance);
+    UART.printf("Distance = %lf cm\r\n bearing = %lf degrees \r\n", distance,  bearing);
     char error = gpsje.init();
 
     if (error & 0x01)
@@ -36,7 +40,6 @@ int main() {
     {
         UART.printf("UART gprmc FAILED\r\n");
     }
-
 //    switch(karel.setupdaterate("200")){
 //        case GPS_ACK_INVALID_COMMAND:
 //            UART.printf("SETUPDATERATE: INVALID COMMAND\r\n");
