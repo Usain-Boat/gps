@@ -11,6 +11,7 @@
 
 
 
+
 class UsainGPS
 {
 public:
@@ -34,6 +35,9 @@ private:
     Thread _update;
 
     AdafruitUltimateGPS _gps;
+
+    CircularBuffer<double, 10> longitude_gemiddelde;
+    CircularBuffer<double, 10> latitude_gemiddelde;
 };
 
 #endif //BLINKY_USAIN_GPS_H

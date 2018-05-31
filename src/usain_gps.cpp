@@ -7,6 +7,8 @@
 
 #define pi 3.141592653589793238462
 
+
+
 double deg2rad(double deg);
 
 double rad2deg(double rad);
@@ -19,8 +21,8 @@ UsainGPS::~UsainGPS() {
 
 uint8_t UsainGPS::init() {
     uint8_t return_value = 0;
-    int status;
-    status = _gps.coldstart();
+
+    int status = _gps.coldstart();
     if (status)
     {
         return_value |= 0x01;

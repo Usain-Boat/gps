@@ -7,23 +7,11 @@ static Serial UART(USBTX, USBRX, 115200);
 
 int main() {
 //    AdafruitUltimateGPS karel;
-    AdafruitUltimateGPS::gprmc_data_t test, piet1, piet2;
+    AdafruitUltimateGPS::gprmc_data_t test;
     UsainGPS gpsje;
-
-    piet1.latitude_fixed = 51.881306;
-    piet1.longitude_fixed = 5.705088;
-
-    piet2.latitude_fixed =51.881251;
-    piet2.longitude_fixed =  5.704611;
-
-
-    double distance;
-    double bearing;
-    gpsje.get_distance_centimeter(piet1, piet2, &distance, &bearing);
 
     UART.printf("STARTUP\r\n");
 
-    UART.printf("Distance = %lf cm\r\n bearing = %lf degrees \r\n", distance, bearing);
     char error = gpsje.init();
 
     if (error & 0x01)
@@ -38,32 +26,8 @@ int main() {
     {
         UART.printf("UART gprmc FAILED\r\n");
     }
-//    switch(karel.setupdaterate("200")){
-//        case GPS_ACK_INVALID_COMMAND:
-//            UART.printf("SETUPDATERATE: INVALID COMMAND\r\n");
-//            break;
-//        case GPS_ACK_UNSUPPORTED_COMMAND:
-//            UART.printf("SETUPDATERATE: UNSUPPORTED COMMAND\r\n");
-//            break;
-//        case GPS_ACK_ACTION_FAILED:
-//            UART.printf("SETUPDATERATE: ACTION FAILED\r\n");
-//            break;
-//        case GPS_ACK_SUCCES:
-//            UART.printf("SETUPDATERATE: SUCCES\r\n");
-//            break;
-//        case '4':
-//            UART.printf("SETUPDATERATE: CODE ERROR\r\n");
-//            break;
-//        default:
-//            UART.printf("SYSTEM FAULT!\r\n");
-//            break;
-//    }
-
     while (true)
     {
-
-
-//        karel.parsedata();
 
         if (!gpsje.get_gps_message(test))
         {
@@ -79,19 +43,5 @@ int main() {
         }
 
     }
-
     return 0;
 }
-
-//class MotorControl{
-//public:
-//    MotorControl():  {
-//
-//    }
-//    ~MotorControl();
-//private:
-//    PwmOut _motor_links;
-//    PwmOut _motor_rechts;
-//    PwmIn   _steer;
-//    PwmIn   _throttle;
-//};
