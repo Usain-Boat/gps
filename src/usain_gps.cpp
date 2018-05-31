@@ -43,26 +43,10 @@ uint8_t UsainGPS::init() {
         return_value |= 0x04;
     }
 
-//    Timer timer;
-//    timer.reset();
-//    timer.start();
-//    AdafruitUltimateGPS::gprmc_data_t gps_data_check;
-//    while (timer.read() < (60 * 5))// wait 5 minutes on valid message
-//    {
-//        _gps.parsedata();
-//        if (_gps.ReceievedNewGPRMC())
-//        {
-//            _gps.ReceievedNewGPRMC(false);
-//            _gps.GetLastGprmcData(&gps_data_check);
-//            if (*gps_data_check.validity == 'A')
-//            {
     if (_update.start(callback(this, &UsainGPS::update)) == osOK)
     {
     };
-//                return return_value;
-//            }
-//        }
-//    }
+
     return return_value;
 }
 
@@ -73,10 +57,10 @@ int UsainGPS::get_gps_message(AdafruitUltimateGPS::gprmc_data_t &dest) {
         return -1;
     }
     _gps.ReceievedNewGPRMC(false);
-//    if (*dest.validity == 'V')
-//    {
-//        return -2; // data not valid
-//    }
+    if (*dest.validity == 'V')
+    {
+        return -2; // data not valid
+    }
     return 0;
 }
 
