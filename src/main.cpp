@@ -3,20 +3,18 @@
 #include "usain_gps.h"
 #include <math.h>
 
-DigitalOut led(LED1);
-DigitalIn button(USER_BUTTON);
-//Serial GPS(D1, D0);
-//Serial UART(USBTX, USBRX, 57600);
+static Serial UART(USBTX, USBRX, 115200);
 
 int main() {
 //    AdafruitUltimateGPS karel;
     AdafruitUltimateGPS::gprmc_data_t test, piet1, piet2;
     UsainGPS gpsje;
 
-    piet1.longitude_fixed = 51.8817876;
-    piet1.latitude_fixed = 5.706754899999964;
-    piet2.longitude_fixed = 51.8819876;
-    piet2.latitude_fixed =   5.706754899999964;
+    piet1.latitude_fixed = 51.881306;
+    piet1.longitude_fixed = 5.705088;
+
+    piet2.latitude_fixed =51.881251;
+    piet2.longitude_fixed =  5.704611;
 
 
     double distance;
@@ -25,7 +23,7 @@ int main() {
 
     UART.printf("STARTUP\r\n");
 
-    UART.printf("Distance = %lf cm\r\n bearing = %lf degrees \r\n", distance,  bearing);
+    UART.printf("Distance = %lf cm\r\n bearing = %lf degrees \r\n", distance, bearing);
     char error = gpsje.init();
 
     if (error & 0x01)

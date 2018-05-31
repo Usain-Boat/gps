@@ -5,7 +5,7 @@
 #include "usain_gps.h"
 #include "drv_gps.h"
 
-#define pi 3.14159265358979323846
+#define pi 3.141592653589793238462
 
 double deg2rad(double deg);
 
@@ -83,27 +83,22 @@ int UsainGPS::get_gps_message(AdafruitUltimateGPS::gprmc_data_t &dest) {
 //haversine method
 void UsainGPS::get_distance_centimeter(AdafruitUltimateGPS::gprmc_data_t &home_position,
                                         AdafruitUltimateGPS::gprmc_data_t &destination_position, double *distance_cm, double *bearing_degrees) {
-    const double R = 6371e3;
-    double home_latitude = deg2rad(home_position.latitude_fixed);
-    double dest_latitude = deg2rad(destination_position.latitude_fixed);
-    double differenceLat = deg2rad(destination_position.latitude_fixed - home_position.latitude_fixed);//(lat2-lat1).toRadians();
-    double differenceLon = deg2rad(destination_position.longitude_fixed - home_position.longitude_fixed);//(lon2-lon1).toRadians();
+    const double R = 6378.137e5;
+    double rlat1 = home_position.latitude_fixed*(pi/180);
+    double rlat2 = destination_position.latitude_fixed*(pi/180);
+    double dlon = (destination_position.longitude_fixed - home_position.longitude_fixed) *(pi/180);
+    double dlat = (destination_position.latitude_fixed - home_position.latitude_fixed)*(pi/180);
+    double a = pow(sin(dlat/2.0),2.0) + cos(rlat1) * cos(rlat2) * pow(sin(dlon/2.0),2.0);
+    //double c = 2 * asin(min(one,sqrt(a)));
+    double c = 2 * atan2(sqrt(a),sqrt(1.0-a));
 
-    double a = sin(differenceLat/2) * sin(differenceLat/2) +
-            cos(home_latitude) * cos(dest_latitude) *
-            sin(differenceLon/2) * sin(differenceLon/2);
-    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+//    *distance_cm = R * c;
+    double rad_bearing = atan2(sin(dlon) * cos(rlat2),
+                              cos(rlat1) * sin(rlat2)
+                              - sin(rlat1) * cos(rlat2) * cos(dlon));
 
-
-
-
-
-    double rad_bearing = atan2(sin(differenceLon) * cos(dest_latitude),
-                              cos(home_latitude) * sin(dest_latitude)
-                              - sin(home_latitude) * cos(dest_latitude) * cos(differenceLon));
-
-    *distance_cm = R * c;
-    *bearing_degrees = (rad2deg(rad_bearing) - 90) < 0 ? (rad2deg(rad_bearing) - 90) + 360: (rad2deg(rad_bearing) - 90);
+    *distance_cm = (R * c);
+    *bearing_degrees = (rad2deg(rad_bearing)) < 0 ? (rad2deg(rad_bearing)) + 360: (rad2deg(rad_bearing));
 }
 
 
@@ -121,13 +116,13 @@ void UsainGPS::update() {
 
 double deg2rad(double deg) {
 
-    return (deg * pi / 180);
+    return (deg * (pi / 180));
 
 }
 
 double rad2deg(double rad) {
 
-    return (rad * 180 / pi);
+    return (rad * (180 / pi));
 
 }
 

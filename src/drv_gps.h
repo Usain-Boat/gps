@@ -9,8 +9,6 @@
 #include "databuffer.h"
 #include <string.h>
 
-
-static Serial UART(USBTX, USBRX, 115200);
 const char GPS_ACK_INVALID_COMMAND = '0';
 const char GPS_ACK_UNSUPPORTED_COMMAND = '1';
 const char GPS_ACK_ACTION_FAILED = '2';
@@ -22,8 +20,9 @@ public:
 
     typedef struct
     {
-        double longitude_fixed;
+
         double latitude_fixed;
+        double longitude_fixed;
         uint8_t time_stamp[10];
         uint8_t validity[10];
         uint8_t latitude[10];
