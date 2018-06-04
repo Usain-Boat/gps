@@ -8,10 +8,10 @@ static Serial UART(USBTX, USBRX, 115200);
 int main() {
 //    AdafruitUltimateGPS karel;
     AdafruitUltimateGPS::gprmc_data_t test;
+
     UsainGPS gpsje;
 
     UART.printf("STARTUP\r\n");
-
     char error = gpsje.init();
 
     if (error & 0x01)

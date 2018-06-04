@@ -222,6 +222,19 @@ void AdafruitUltimateGPS::parsedata() {
             _last_received_gprmc.longitude_fixed = degrees + (length / 60);
 
             _flag_gprmc_message_received = true;
+            if (_last_received_gprmc.validity[0] != 'A')
+            {
+                _last_received_gprmc.longitude_fixed = 0;
+                _last_received_gprmc.latitude_fixed = 0;
+            }
+            for (int i = (average_location - 1); i > 0; i--)
+            {
+                longitude_average[i - 1] = longitude_average[i];
+                latitude_average[i - 1] = latitude_average[i];
+            }
+            longitude_average[0] = _last_received_gprmc.longitude_fixed;
+            latitude_average[0] = _last_received_gprmc.latitude_fixed;
+
 
         }
         else
@@ -319,6 +332,22 @@ void AdafruitUltimateGPS::GetLastGprmcData(gprmc_data_t *gpsdata) {
     memcpy(gpsdata, &_last_received_gprmc, sizeof(gprmc_data_t));
 }
 
+double AdafruitUltimateGPS::getaveragelocation(double *longitude, double *latitude) {
+    double longitude_temp = 0;
+    double latitude_temp = 0;
+    for (int i = 0; i < average_location; i++)
+    {
+        if (latitude_average[i] != 0 && longitude_average[i] != 0)
+        {
+            latitude_temp /= i;
+            break;
+        }
+        longitude_temp += longitude_average[i];
+        latitude_temp += latitude_average[i];
+    }
+    return latitude_temp;
+}
+
 int AdafruitUltimateGPS::setbaudrateto115200() {
 
     writeregister((uint8_t *) GPS_SET_BAUDRATE, (uint8_t *) "115200", 6);
@@ -414,7 +443,7 @@ int AdafruitUltimateGPS::coldstart() {
 }
 
 int AdafruitUltimateGPS::onlyreceivegprmcdata() {
-    writeregister((uint8_t *) GPS_SET_NMEA_OUTPUT, (uint8_t *)"0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" , 37 );
+    writeregister((uint8_t *) GPS_SET_NMEA_OUTPUT, (uint8_t *) "0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0", 37);
 
     Timer lookforflags;
     lookforflags.reset();

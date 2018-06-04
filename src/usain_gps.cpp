@@ -8,16 +8,9 @@
 #define pi 3.141592653589793238462
 
 
-
-double deg2rad(double deg);
-
-double rad2deg(double rad);
-
 UsainGPS::UsainGPS() {}
 
-UsainGPS::~UsainGPS() {
-
-}
+UsainGPS::~UsainGPS() {}
 
 uint8_t UsainGPS::init() {
     uint8_t return_value = 0;
@@ -34,7 +27,7 @@ uint8_t UsainGPS::init() {
     delaytje.reset();
     delaytje.start();
     while (delaytje.read() < 1);
-    while(_gps.setupdaterate((char *) "100"));
+    while (_gps.setupdaterate((char *) "100"));
     if (status)
     {
         return_value |= 0x02;
@@ -67,24 +60,27 @@ int UsainGPS::get_gps_message(AdafruitUltimateGPS::gprmc_data_t &dest) {
 }
 
 //haversine method
-void UsainGPS::get_distance_centimeter(AdafruitUltimateGPS::gprmc_data_t &home_position,
-                                        AdafruitUltimateGPS::gprmc_data_t &destination_position, double *distance_cm, double *bearing_degrees) {
+void UsainGPS::calculate_distance(double dest_latitude, double dest_longitude, double *distance_cm,
+                                  double *bearing_degrees) {
+    double home_latitude, home_longitude;
+    _gps.getaveragelocation(&home_longitude, &home_latitude);
+
     const double R = 6378.137e5;
-    double rlat1 = home_position.latitude_fixed*(pi/180);
-    double rlat2 = destination_position.latitude_fixed*(pi/180);
-    double dlon = (destination_position.longitude_fixed - home_position.longitude_fixed) *(pi/180);
-    double dlat = (destination_position.latitude_fixed - home_position.latitude_fixed)*(pi/180);
-    double a = pow(sin(dlat/2.0),2.0) + cos(rlat1) * cos(rlat2) * pow(sin(dlon/2.0),2.0);
+    double rlat1 = home_latitude * (pi / 180);
+    double rlat2 = dest_latitude * (pi / 180);
+    double dlon = (dest_longitude - home_longitude) * (pi / 180);
+    double dlat = (dest_latitude - home_latitude) * (pi / 180);
+    double a = pow(sin(dlat / 2.0), 2.0) + cos(rlat1) * cos(rlat2) * pow(sin(dlon / 2.0), 2.0);
     //double c = 2 * asin(min(one,sqrt(a)));
-    double c = 2 * atan2(sqrt(a),sqrt(1.0-a));
+    double c = 2 * atan2(sqrt(a), sqrt(1.0 - a));
 
 //    *distance_cm = R * c;
     double rad_bearing = atan2(sin(dlon) * cos(rlat2),
-                              cos(rlat1) * sin(rlat2)
-                              - sin(rlat1) * cos(rlat2) * cos(dlon));
+                               cos(rlat1) * sin(rlat2)
+                               - sin(rlat1) * cos(rlat2) * cos(dlon));
 
     *distance_cm = (R * c);
-    *bearing_degrees = (rad2deg(rad_bearing)) < 0 ? (rad2deg(rad_bearing)) + 360: (rad2deg(rad_bearing));
+    *bearing_degrees = rad_bearing * (180 / pi);
 }
 
 
@@ -99,16 +95,4 @@ void UsainGPS::update() {
     }
 }
 
-
-double deg2rad(double deg) {
-
-    return (deg * (pi / 180));
-
-}
-
-double rad2deg(double rad) {
-
-    return (rad * (180 / pi));
-
-}
 

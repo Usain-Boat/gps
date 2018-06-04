@@ -37,7 +37,7 @@ public:
         uint8_t mode_indicator[10];
 
 
-    }gprmc_data_t;
+    } gprmc_data_t;
 
     AdafruitUltimateGPS();
 
@@ -54,6 +54,8 @@ public:
 
     void GetLastGprmcData(gprmc_data_t *gpsdata);
 
+    double getaveragelocation(double *longitude, double *latitude);
+
     int setbaudrateto115200();
 
     int setupdaterate(char *updaterate);
@@ -68,6 +70,7 @@ public:
 
 private:
 
+
     struct ultimate_gps_message
     {
         uint8_t messagetype[10];
@@ -80,6 +83,10 @@ private:
     Databuffer _receivestring;
     ultimate_gps_message _last_received_message;
     gprmc_data_t _last_received_gprmc;
+
+#define average_location 10
+    double longitude_average[average_location];
+    double latitude_average[average_location];
 
     void _RXInterrupt();
 
