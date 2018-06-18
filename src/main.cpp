@@ -3,17 +3,34 @@
 #include "usain_gps.h"
 #include <math.h>
 
-static Serial UART(USBTX, USBRX, 115200);
+UsainGPS gpsje;
+
+void printmessage()
+{
+    AdafruitUltimateGPS::gprmc_data_t test;
+    double distance, bearing;
+
+    if (!gpsje.get_gps_message(test))
+    {
+        if (*test.validity == 'A')
+        {
+//                gps data = LLDD.DD lat = LL + (DD.DD / 60)
+            UART.printf("Coördinates are: %f, %f \r\n", test.latitude_fixed, test.longitude_fixed);
+            gpsje.calculate_distance(51.987475, 5.950763, &distance, &bearing);
+            UART.printf("average coordinates are: %f meters, %f degrees\r\n", distance, bearing);
+        }
+        else
+        {
+            UART.printf("searching for GPS %s\r\n", &test.validity);
+        }
+    }
+}
 
 int main() {
-//    AdafruitUltimateGPS karel;
-    AdafruitUltimateGPS::gprmc_data_t test;
-
-    UsainGPS gpsje;
-
+//    AdafruitUltimateGPS karel;S
     UART.printf("STARTUP\r\n");
     char error = gpsje.init();
-
+    UART.printf("INITIALIZED");
     if (error & 0x01)
     {
         UART.printf("COLD START FAILED\r\n");
@@ -26,21 +43,13 @@ int main() {
     {
         UART.printf("UART gprmc FAILED\r\n");
     }
+    UART.printf("INITIALIZED");
+
+    gpsje.on_new_message(callback(printmessage));
     while (true)
     {
 
-        if (!gpsje.get_gps_message(test))
-        {
-            if (*test.validity == 'A')
-            {
-                //gps data = LLDD.DD lat = LL + (DD.DD / 60)
-                UART.printf("Coördinates are: %f, %f \r\n", test.latitude_fixed, test.longitude_fixed);
-            }
-            else
-            {
-                UART.printf("searching for GPS %s\r\n", &test.validity);
-            }
-        }
+
 
     }
     return 0;

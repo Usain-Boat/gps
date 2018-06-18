@@ -8,26 +8,24 @@
 #define pi 3.141592653589793238462
 
 
-UsainGPS::UsainGPS() {}
+UsainGPS::UsainGPS(): callback_registered(false) {}
 
-UsainGPS::~UsainGPS() {}
 
 uint8_t UsainGPS::init() {
     uint8_t return_value = 0;
-
-    int status = _gps.coldstart();
-    if (status)
-    {
-        return_value |= 0x01;
-    }
-
-
+    int status = 0;
+//    int status = _gps.coldstart();
+//    if (status)
+//    {
+//        return_value |= 0x01;
+//    }
     while (_gps.setbaudrateto115200());
     Timer delaytje;
     delaytje.reset();
     delaytje.start();
     while (delaytje.read() < 1);
     while (_gps.setupdaterate((char *) "100"));
+
     if (status)
     {
         return_value |= 0x02;
@@ -58,6 +56,12 @@ int UsainGPS::get_gps_message(AdafruitUltimateGPS::gprmc_data_t &dest) {
     }
     return 0;
 }
+
+void UsainGPS::get_average_gps(double *latitude, double *longitude)
+{
+    _gps.getaveragelocation(longitude, latitude);
+}
+
 
 //haversine method
 void UsainGPS::calculate_distance(double dest_latitude, double dest_longitude, double *distance_cm,
@@ -92,12 +96,13 @@ void UsainGPS::update() {
     while (1)
     {
         _gps.parsedata();
-        if (_gps.ReceievedNewGPRMC())
+        if (_gps.ReceievedNewGPRMC() && callback_registered)
         {
             _collision_callback.call();
         }
 
     }
 }
+
 
 
