@@ -5,25 +5,16 @@
 
 UsainGPS gpsje;
 
-void printmessage()
+void printmessage(AdafruitUltimateGPS::gprmc_data_t gps_data)
 {
-    AdafruitUltimateGPS::gprmc_data_t test;
     double distance, bearing;
-
-    if (!gpsje.get_gps_message(test))
-    {
-        if (*test.validity == 'A')
+        if (*gps_data.validity == 'A')
         {
 //                gps data = LLDD.DD lat = LL + (DD.DD / 60)
-            UART.printf("Coördinates are: %f, %f \r\n", test.latitude_fixed, test.longitude_fixed);
+            UART.printf("Coördinates are: %f, %f \r\n", gps_data.latitude_fixed, gps_data.longitude_fixed);
             gpsje.calculate_distance(51.987475, 5.950763, &distance, &bearing);
             UART.printf("average coordinates are: %f meters, %f degrees\r\n", distance, bearing);
         }
-        else
-        {
-            UART.printf("searching for GPS %s\r\n", &test.validity);
-        }
-    }
 }
 
 int main() {

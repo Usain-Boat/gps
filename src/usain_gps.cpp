@@ -8,7 +8,7 @@
 #define pi 3.141592653589793238462
 
 
-UsainGPS::UsainGPS(): callback_registered(false) {}
+UsainGPS::UsainGPS() {}
 
 
 uint8_t UsainGPS::init() {
@@ -93,12 +93,15 @@ bool UsainGPS::data_received() {
 }
 
 void UsainGPS::update() {
+    AdafruitUltimateGPS::gprmc_data_t gps_data;
+
     while (1)
     {
         _gps.parsedata();
-        if (_gps.ReceievedNewGPRMC() && callback_registered)
+        if (_gps.ReceievedNewGPRMC() && _collision_callback)
         {
-            _collision_callback.call();
+            _gps.GetLastGprmcData(&gps_data);
+            _collision_callback.call(gps_data);
         }
 
     }

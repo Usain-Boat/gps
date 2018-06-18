@@ -28,19 +28,16 @@ public:
     void calculate_distance(double dest_latitude, double dest_longitude, double *distance_cm,
                             double *bearing_degrees);
 
-    void on_new_message(const Callback<void()> &callback)
+    void on_new_message(const Callback<void(AdafruitUltimateGPS::gprmc_data_t gps_data)> &callback)
     {
         _collision_callback = callback;
-        callback_registered = true;
     }
 
 
     bool data_received();
 
 private:
-    bool callback_registered;
-
-    Callback<void()>  _collision_callback;
+    Callback<void(AdafruitUltimateGPS::gprmc_data_t gps_data)>  _collision_callback;
 
     void update();
 
